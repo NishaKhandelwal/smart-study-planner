@@ -1,42 +1,61 @@
-import { BrowserRouter,Routes,Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Subjects from "./pages/Subjects";
 import Tasks from "./pages/Tasks";
 import Pomodoro from "./pages/Pomodoro";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-const PrivateRoute = ({children}) => {
 
+// PrivateRoute component
+const PrivateRoute = ({ children }) => {
   const token = localStorage.getItem("token");
+  return token ? children : <Login />;
+};
 
-  return token ? children : <Login/>
-
-}
-
-function App(){
-
-  return(
-
+function App() {
+  return (
     <BrowserRouter>
-
       <Routes>
-        <Route path="/subjects" element={<Subjects />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/pomodoro" element={<Pomodoro />} />
-        <Route path="/" element={<Login/>}/>
-        <Route path="/register" element={<Register/>}/>
-        <Route 
+        {/* Public routes */}
+        <Route path="/" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Private routes */}
+        <Route
           path="/dashboard"
           element={
             <PrivateRoute>
-              <Dashboard/>
+              <Dashboard />
             </PrivateRoute>
-          }/>
+          }
+        />
+        <Route
+          path="/subjects"
+          element={
+            <PrivateRoute>
+              <Subjects />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/tasks"
+          element={
+            <PrivateRoute>
+              <Tasks />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/pomodoro"
+          element={
+            <PrivateRoute>
+              <Pomodoro />
+            </PrivateRoute>
+          }
+        />
       </Routes>
-
     </BrowserRouter>
-
-  )
+  );
 }
 
-export default App
+export default App;

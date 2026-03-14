@@ -15,6 +15,11 @@ const app = express();
 // middleware
 app.use(cors());
 app.use(express.json());
+import subjectRoutes from "./routes/subject.js";
+import taskRoutes from "./routes/task.js";
+
+app.use("/api/subjects", subjectRoutes);
+app.use("/api/tasks", taskRoutes);
 
 // test route
 app.get("/", (req, res) => {

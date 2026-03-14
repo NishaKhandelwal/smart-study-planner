@@ -1,15 +1,17 @@
 import React from "react";
 import PomodoroTimer from "../components/PomodoroTimer";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 function Dashboard() {
-
   const navigate = useNavigate();
 
   const logout = () => {
     localStorage.removeItem("token");
     navigate("/");
   };
+
+  const activeClass = "text-blue-600 font-bold";
+  const inactiveClass = "hover:text-blue-500 cursor-pointer";
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -20,12 +22,42 @@ function Dashboard() {
           StudyPlanner
         </h2>
 
-        <ul className="space-y-4">
-          <li className="cursor-pointer hover:text-blue-500">Dashboard</li>
-          <li className="cursor-pointer hover:text-blue-500">Subjects</li>
-          <li className="cursor-pointer hover:text-blue-500">Tasks</li>
-          <li className="cursor-pointer hover:text-blue-500">Pomodoro</li>
-        </ul>
+        <nav className="flex flex-col space-y-4">
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Dashboard
+          </NavLink>
+
+          <NavLink
+            to="/subjects"
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Subjects
+          </NavLink>
+
+          <NavLink
+            to="/tasks"
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Tasks
+          </NavLink>
+
+          <NavLink
+            to="/pomodoro"
+            className={({ isActive }) => isActive ? activeClass : inactiveClass}
+          >
+            Pomodoro
+          </NavLink>
+        </nav>
+
+        <button
+          onClick={logout}
+          className="mt-10 bg-red-500 text-white px-4 py-2 rounded w-full"
+        >
+          Logout
+        </button>
       </div>
 
       {/* Main Section */}
@@ -33,23 +65,13 @@ function Dashboard() {
 
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
-
           <h1 className="text-3xl font-bold">
             Dashboard
           </h1>
-
-          <button
-            onClick={logout}
-            className="bg-red-500 text-white px-4 py-2 rounded"
-          >
-            Logout
-          </button>
-
         </div>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-3 gap-6 mb-10">
-
           <div className="bg-white p-6 rounded-xl shadow">
             <h3 className="text-gray-500">Tasks Today</h3>
             <p className="text-2xl font-bold">5</p>
@@ -64,7 +86,6 @@ function Dashboard() {
             <h3 className="text-gray-500">Pomodoro Sessions</h3>
             <p className="text-2xl font-bold">12</p>
           </div>
-
         </div>
 
         {/* Pomodoro Timer */}
@@ -73,7 +94,6 @@ function Dashboard() {
         </div>
 
       </div>
-
     </div>
   );
 }

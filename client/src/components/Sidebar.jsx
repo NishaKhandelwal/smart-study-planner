@@ -1,27 +1,41 @@
-<ul className="space-y-4">
+import { NavLink } from "react-router-dom";
 
-  <li>
-    <Link to="/dashboard" className="hover:text-blue-500">
-      Dashboard
-    </Link>
-  </li>
+export default function Sidebar() {
+  const activeClass = "bg-blue-500 text-white px-4 py-2 rounded";
+  const inactiveClass = "px-4 py-2 hover:bg-blue-100 rounded";
 
-  <li>
-    <Link to="/subjects" className="hover:text-blue-500">
-      Subjects
-    </Link>
-  </li>
+  return (
+    <div className="w-48 h-screen border-r p-4">
+      <h2 className="text-xl font-bold mb-4">Smart Study Planner</h2>
+      <nav className="flex flex-col gap-2">
+        <NavLink
+          to="/dashboard"
+          className={({ isActive }) => isActive ? activeClass : inactiveClass}
+        >
+          Dashboard
+        </NavLink>
 
-  <li>
-    <Link to="/tasks" className="hover:text-blue-500">
-      Tasks
-    </Link>
-  </li>
+        <NavLink
+          to="/subjects"
+          className={({ isActive }) => isActive ? activeClass : inactiveClass}
+        >
+          Subjects
+        </NavLink>
 
-  <li>
-    <Link to="/pomodoro" className="hover:text-blue-500">
-      Pomodoro
-    </Link>
-  </li>
+        <NavLink
+          to="/tasks"
+          className={({ isActive }) => isActive ? activeClass : inactiveClass}
+        >
+          Tasks
+        </NavLink>
 
-</ul>
+        <NavLink
+          to="/pomodoro"
+          className={({ isActive }) => isActive ? activeClass : inactiveClass}
+        >
+          Pomodoro
+        </NavLink>
+      </nav>
+    </div>
+  );
+}

@@ -1,100 +1,197 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import PomodoroTimer from "../components/PomodoroTimer";
-import { NavLink, useNavigate } from "react-router-dom";
+import API from "../services/api";
 
 function Dashboard() {
-  const navigate = useNavigate();
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/");
-  };
+  const [tasks, setTasks] = useState([]);
+  const [subjects, setSubjects] = useState([]);
 
-  const activeClass = "text-blue-600 font-bold";
-  const inactiveClass = "hover:text-blue-500 cursor-pointer";
+  useEffect(() => {
+
+    const fetchData = async () => {
+
+      try {
+
+        const tasksRes = await API.get("/tasks");
+        const subjectsRes = await API.get("/subjects");
+
+        setTasks(tasksRes.data);
+        setSubjects(subjectsRes.data);
+
+      } catch (err) {
+        console.log(err);
+      }
+
+    };
+
+    fetchData();
+
+  }, []);
+
+  // FIXED: use completed instead of status
+  const completedTasks = tasks.filter(t => t.completed).length;
+  const progress = tasks.length ? (completedTasks / tasks.length) * 100 : 0;
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
 
-      {/* Sidebar */}
-      <div className="w-64 bg-white shadow-md p-6">
-        <h2 className="text-2xl font-bold text-blue-600 mb-8">
-          StudyPlanner
+    <div className="p-10">
+
+      {/* Header */}
+      <h1 className="text-4xl font-bold mb-10 text-gray-800">
+        Welcome Back 👋
+      </h1>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-8 mb-10">
+
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <h3 className="text-gray-500 mb-2">Total Tasks</h3>
+          <p className="text-4xl font-bold text-blue-600">
+            {tasks.length}
+          </p>
+        </div>
+
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <h3 className="text-gray-500 mb-2">Subjects</h3>
+          <p className="text-4xl font-bold text-green-600">
+            {subjects.length}
+          </p>
+        </div>
+
+        <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
+          <h3 className="text-gray-500 mb-2">Completed</h3>
+          <p className="text-4xl font-bold text-purple-600">
+            {completedTasks}
+          </p>
+        </div>
+
+      </div>
+
+      {/* Progress */}
+      <div className="bg-white p-8 rounded-2xl shadow-lg mb-10 max-w-xl">
+
+        <h2 className="text-xl font-bold mb-4 text-gray-700">
+          Task Progress
         </h2>
 
-        <nav className="flex flex-col space-y-4">
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) => isActive ? activeClass : inactiveClass}
-          >
-            Dashboard
-          </NavLink>
+        <div className="w-full bg-gray-200 rounded-full h-4">
 
-          <NavLink
-            to="/subjects"
-            className={({ isActive }) => isActive ? activeClass : inactiveClass}
-          >
-            Subjects
-          </NavLink>
+          <div
+            className="bg-blue-500 h-4 rounded-full transition-all duration-500"
+            style={{ width: `${progress}%` }}
+          ></div>
 
-          <NavLink
-            to="/tasks"
-            className={({ isActive }) => isActive ? activeClass : inactiveClass}
-          >
-            Tasks
-          </NavLink>
+        </div>
 
-          <NavLink
-            to="/pomodoro"
-            className={({ isActive }) => isActive ? activeClass : inactiveClass}
-          >
-            Pomodoro
-          </NavLink>
-        </nav>
+        <p className="mt-3 text-gray-600">
+          {completedTasks} of {tasks.length} tasks completed
+        </p>
 
-        <button
-          onClick={logout}
-          className="mt-10 bg-red-500 text-white px-4 py-2 rounded w-full"
-        >
-          Logout
-        </button>
       </div>
 
-      {/* Main Section */}
-      <div className="flex-1 p-8">
+      {/* Middle Section */}
+      <div className="grid grid-cols-2 gap-10">
 
-        {/* Header */}
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">
-            Dashboard
-          </h1>
-        </div>
+        {/* Pomodoro */}
+        <div className="bg-white p-8 rounded-2xl shadow-lg">
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-3 gap-6 mb-10">
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="text-gray-500">Tasks Today</h3>
-            <p className="text-2xl font-bold">5</p>
-          </div>
+          <h2 className="text-2xl font-bold mb-6 text-gray-700">
+            Focus Timer
+          </h2>
 
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="text-gray-500">Study Streak</h3>
-            <p className="text-2xl font-bold">7 days</p>
-          </div>
-
-          <div className="bg-white p-6 rounded-xl shadow">
-            <h3 className="text-gray-500">Pomodoro Sessions</h3>
-            <p className="text-2xl font-bold">12</p>
-          </div>
-        </div>
-
-        {/* Pomodoro Timer */}
-        <div className="flex justify-center">
           <PomodoroTimer />
+
+        </div>
+
+        {/* Recent Tasks */}
+        <div className="bg-white p-8 rounded-2xl shadow-lg">
+
+          <h2 className="text-2xl font-bold mb-6 text-gray-700">
+            Recent Tasks
+          </h2>
+
+          {tasks.length === 0 ? (
+
+            <p className="text-gray-500">
+              No tasks added yet
+            </p>
+
+          ) : (
+
+            <ul className="space-y-3">
+
+              {tasks.slice(0,5).map((task) => (
+
+                <li
+                  key={task._id}
+                  className="flex justify-between border-b pb-2"
+                >
+
+                  <span className={task.completed ? "line-through text-gray-400" : ""}>
+                    {task.title}
+                  </span>
+
+                  <span className="text-sm text-gray-400">
+                    {task.completed ? "Done" : "Pending"}
+                  </span>
+
+                </li>
+
+              ))}
+
+            </ul>
+
+          )}
+
         </div>
 
       </div>
+
+      {/* Subjects */}
+      <div className="bg-white p-8 rounded-2xl shadow-lg mt-10 max-w-xl">
+
+        <h2 className="text-2xl font-bold mb-6 text-gray-700">
+          Subjects
+        </h2>
+
+        {subjects.length === 0 ? (
+
+          <p className="text-gray-500">
+            No subjects added
+          </p>
+
+        ) : (
+
+          <ul className="space-y-3">
+
+            {subjects.map((subject) => (
+
+              <li
+                key={subject._id}
+                className="flex justify-between border-b pb-2"
+              >
+
+                <span className="font-medium">
+                  {subject.name}
+                </span>
+
+                <span className="text-gray-400 text-sm">
+                  Active
+                </span>
+
+              </li>
+
+            ))}
+
+          </ul>
+
+        )}
+
+      </div>
+
     </div>
+
   );
 }
 

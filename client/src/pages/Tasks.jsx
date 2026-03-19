@@ -7,11 +7,12 @@ export default function Tasks() {
   const [title, setTitle] = useState("");
   const [subjects, setSubjects] = useState([]);
   const [subjectId, setSubjectId] = useState("");
+  const [dueDate, setDueDate] = useState("");
+  const [priority, setPriority] = useState("");
 
   const fetchSubjects = async () => {
     const res = await API.get("/subjects");
     setSubjects(res.data);
-    if (res.data[0]) setSubjectId(res.data[0]._id);
   };
 
   const fetchTasks = async () => {
@@ -20,12 +21,20 @@ export default function Tasks() {
   };
 
   const addTask = async () => {
-    if (!title || !subjectId) return;
+    if (!title || !subjectId || !dueDate || !priority) return;
 
-    const res = await API.post("/tasks", { title, subjectId });
+    const res = await API.post("/tasks", {
+      title,
+      subjectId,
+      dueDate,
+      priority
+    });
 
     setTasks([...tasks, res.data]);
     setTitle("");
+    setDueDate("");
+    setPriority("");
+    setSubjectId("");
   };
 
   const toggleTask = async (id) => {
@@ -35,11 +44,8 @@ export default function Tasks() {
 
   const deleteTask = async (id) => {
     try {
-
       await API.delete(`/tasks/${id}`);
-
       setTasks(tasks.filter((task) => task._id !== id));
-
     } catch (error) {
       console.log(error);
     }
@@ -50,59 +56,86 @@ export default function Tasks() {
     fetchTasks();
   }, []);
 
+  const getPriorityUI = (priority) => {
+    const base = "px-2 py-1 rounded-full text-xs font-medium";
+
+    if (priority === "high")
+      return <span className={`${base} bg-red-100 text-red-600`}>High</span>;
+
+    if (priority === "medium")
+      return <span className={`${base} bg-yellow-100 text-yellow-600`}>Medium</span>;
+
+    if (priority === "low")
+      return <span className={`${base} bg-green-100 text-green-600`}>Low</span>;
+
+    return null;
+  };
+
   return (
 
     <div className="p-8">
 
-      {/* Page Title */}
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">
-        Tasks
-      </h1>
+      <h1 className="text-3xl font-bold mb-6">Tasks</h1>
 
-      {/* Add Task Card */}
-      <div className="bg-white shadow-lg rounded-xl p-6 mb-8 w-[500px]">
+      {/* ONE LINE INPUT */}
+      <div className="bg-white p-4 rounded-xl shadow mb-6 flex gap-3 items-center w-[800px]">
 
-        <div className="flex gap-3">
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder="Task..."
+          className="border px-3 py-2 rounded-lg flex-1"
+        />
 
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Add new task..."
-            className="flex-1 border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400"
-          />
+        <select
+          value={subjectId}
+          onChange={(e) => setSubjectId(e.target.value)}
+          className="border px-3 py-2 rounded-lg"
+        >
+          <option value="">Subject</option>
+          {subjects.map((s) => (
+            <option key={s._id} value={s._id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
 
-          <select
-            value={subjectId}
-            onChange={(e) => setSubjectId(e.target.value)}
-            className="border rounded-lg px-3 py-2"
-          >
-            {subjects.map((s) => (
-              <option key={s._id} value={s._id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
+        <input
+          type="date"
+          value={dueDate}
+          onChange={(e) => setDueDate(e.target.value)}
+          className="border px-3 py-2 rounded-lg"
+        />
 
-          <button
-            onClick={addTask}
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg"
-          >
-            Add
-          </button>
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+          className="border px-3 py-2 rounded-lg"
+        >
+          <option value="">Priority</option>
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
+        </select>
 
-        </div>
+        <button
+          onClick={addTask}
+          className="bg-green-500 text-white px-5 py-2 rounded-lg"
+        >
+          Add
+        </button>
 
       </div>
 
-      {/* Task List */}
-      <div className="space-y-4">
+      {/* TASK LIST */}
+      <div className="space-y-3">
 
         {tasks.map((t) => (
 
           <div
             key={t._id}
-            className="flex justify-between items-center bg-white shadow-md rounded-xl p-4 w-[500px]"
+            className="flex justify-between items-center bg-white p-4 rounded-xl shadow w-[800px]"
           >
 
             <div className="flex items-center gap-3">
@@ -111,25 +144,31 @@ export default function Tasks() {
                 type="checkbox"
                 checked={t.completed}
                 onChange={() => toggleTask(t._id)}
-                className="w-5 h-5"
               />
 
-              <span
-                className={`text-lg ${
-                  t.completed ? "line-through text-gray-400" : "text-gray-700"
-                }`}
-              >
-                {t.title} ({t.subjectId?.name})
-              </span>
+              <div>
+                <p className={t.completed ? "line-through text-gray-400" : ""}>
+                  {t.title}
+                </p>
+                <p className="text-sm text-gray-400">
+                  {t.subjectId?.name} • {new Date(t.dueDate).toLocaleDateString()}
+                </p>
+              </div>
 
             </div>
 
-            <button
-              onClick={() => deleteTask(t._id)}
-              className="text-red-500 hover:text-red-700 font-medium"
-            >
-              Delete
-            </button>
+            <div className="flex items-center gap-4">
+
+              {getPriorityUI(t.priority)}
+
+              <button
+                onClick={() => deleteTask(t._id)}
+                className="text-red-500"
+              >
+                Delete
+              </button>
+
+            </div>
 
           </div>
 
